@@ -1,0 +1,300 @@
+{{ header }}{{ column_left }}
+<div id="content">
+	<div class="page-header">
+		<div class="container-fluid">
+			<div class="float-end">
+        <button type="button" data-bs-toggle="tooltip" title="{{ button_add }}" class="btn btn-primary" id="event-add"><i class="fas fa-plus-circle"></i></button>        
+				<button type="submit" form="form-event" formaction="{{ delete }}" data-bs-toggle="tooltip" title="{{ button_delete }}" onclick="return confirm('{{ text_confirm }}');" class="btn btn-danger"><i class="fas fa-trash-alt"></i></button>
+			</div>
+			<h1>{{ heading_title }}</h1>
+			<ol class="breadcrumb">
+				{% for breadcrumb in breadcrumbs %}
+					<li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+				{% endfor %}
+			</ol>
+		</div>
+	</div>
+	<div class="container-fluid">
+		<div class="alert alert-info"><i class="fas fa-info-circle"></i> {{ text_event }}</div>    
+    <div class="row">
+      <div id="filter-event" class="col-lg-3 col-md-12 order-lg-last d-none d-lg-block mb-3">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-filter"></i> {{ text_filter }}</div>
+          <div class="card-body">
+            <div class="mb-3">
+              <label for="input-code" class="form-label">{{ entry_code }}</label>
+              <input type="text" name="filter_code" value="{{ filter_code }}" placeholder="{{ entry_code }}" id="input-code" class="form-control"/>
+            </div>
+            <div class="mb-3">
+              <label for="input-trigger" class="form-label">{{ entry_trigger }}</label> <input type="text" name="filter_trigger" value="{{ filter_trigger }}" placeholder="{{ entry_trigger }}" id="input-trigger" class="form-control"/>
+            </div>
+            <div class="mb-3">
+              <label for="input-action" class="form-label">{{ entry_action }}</label> <input type="text" name="filter_action" value="{{ filter_action }}" placeholder="{{ entry_action }}" id="input-action" class="form-control"/>
+            </div>
+            <div class="mb-3">
+              <label for="input-status" class="form-label">{{ entry_status }}</label> <select name="filter_status" id="input-status" class="form-select">
+                <option value=""></option>
+                <option value="1"{% if filter_status == '1' %} selected{% endif %}>{{ text_enabled }}</option>
+                <option value="0"{% if filter_status == '0' %} selected{% endif %}>{{ text_disabled }}</option>
+              </select>
+            </div>
+            <div class="text-end">
+              <button type="button" id="button-filter" class="btn btn-light" data-oc-load="{{ list_action }}"><i class="fas fa-filter"></i> {{ button_filter }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col col-lg-9 col-md-12">
+        <div class="card">
+          <div class="card-header"><i class="fas fa-list"></i> {{ text_list }}</div>
+          <div id="event" class="card-body">{{ list }}</div>
+        </div>
+      </div>
+    </div>
+	</div>
+</div>
+<script type="text/javascript"><!--
+$('#event').on('click', 'thead a, .pagination a', function(e) {
+    e.preventDefault();
+
+    $('#event').load(this.href);
+});
+
+$('#event').on('click', '.btn-success, .btn-danger', function(e) {
+    e.preventDefault();
+
+    var element = this;
+
+    $.ajax({
+        url: $(element).val(),
+        type: 'post',
+        data: $('#event input[name=\'selected[]\']:checked'),
+        dataType: 'json',
+        beforeSend: function() {
+            $(element).prop('disabled', true).addClass('loading');
+        },
+        complete: function() {
+            $(element).prop('disabled', false).removeClass('loading');
+        },
+        success: function(json) {
+            if (json['error']) {
+                $('#alert').prepend('<div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> ' + json['error'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+            }
+
+            if (json['success']) {
+                $('#alert').prepend('<div class="alert alert-success alert-dismissible"><i class="fas fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+
+                $('#event').load($('#form-event').attr('data-oc-load'));
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            console.log(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+});
+
+$('#event').on('click', '.btn-info', function() {
+    var element = this;
+
+    $('#modal-event').remove();
+
+    html = '<div id="modal-event" class="modal">';
+    html += '  <div class="modal-dialog">';
+    html += '    <div class="modal-content">';
+    html += '      <div class="modal-header">';
+    html += '        <h5 class="modal-title">{{ text_info }}</h5>';
+    html += '        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>';
+    html += '      </div>';
+    html += '      <div class="modal-body">';
+    html += '        <div class="mb-3">';
+    html += '          <label for="input-description" class="col-form-label">{{ entry_description }}</label> <textarea placeholder="{{ entry_description }}" id="input-description" rows="5" class="form-control" disabled>' + $(element).attr('data-oc-description') + '</textarea>';
+    html += '        </div>';
+    html += '        <div class="mb-3">';
+    html += '          <label for="input-trigger" class="col-form-label">{{ entry_trigger }}</label> <textarea placeholder="{{ entry_trigger }}" id="input-trigger" class="form-control" disabled>' + $(element).attr('data-oc-trigger') + '</textarea>';
+    html += '        </div>';
+    html += '        <div class="mb-3">';
+    html += '          <label for="input-action" class="col-form-label">{{ entry_action }}</label> <textarea placeholder="{{ entry_action }}" id="input-action" class="form-control" disabled>' + $(element).attr('data-oc-action') + '</textarea>';
+    html += '        </div>';
+    html += '      </div>';
+    html += '      </div>';
+    html += '    </div>';
+    html += '  </div>';
+    html += '</div>';
+
+    $('body').append(html);
+
+    var modal = new bootstrap.Modal(document.querySelector('#modal-event'));
+
+    modal.show();
+});
+
+$('#event').on('click', '.event-edit', function() {
+    modal_event_form_create(this);
+});
+
+$(document).on('click', '#event-add', function() {
+    modal_event_form_create($());
+});
+
+function modal_event_form_create(element) {
+
+    var event_id = $(element).attr('data-oc-event-id') || '';
+    var code = $(element).attr('data-oc-code') || '';
+    var description = $(element).attr('data-oc-description') || '';
+    var trigger = $(element).attr('data-oc-trigger') || '';
+    var action = $(element).attr('data-oc-action') || '';
+    var sort_order = $(element).attr('data-oc-sort-order') || 0;
+    var status = $(element).attr('data-oc-status') || '';
+
+    $('#modal-event-form').remove();
+
+    html = '<div id="modal-event-form" class="modal">';
+    html += '  <div class="modal-dialog">';
+    html += '    <div class="modal-content">';
+    html += '      <div class="modal-header">';
+    html += '        <h5 class="modal-title">' + (event_id ? '{{ text_edit }}' : '{{ text_add }}' ) + '</h5><span class="modal-title-event-id">' + (event_id ? '&nbsp;#' + event_id : '' ) + '</span>';
+    html += '        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>';
+    html += '      </div>';
+    html += '      <div class="modal-body">';
+
+    html += '        <div class="alert"/>';
+
+    html += '        <form id="event-form" method="post" action="{{ save }}">';
+
+    html += '        <input type="hidden" name="event_id" id="input-event-id" value="' + event_id + '"></input>';
+
+    html += '        <div class="mb-3 required">';
+    html += '          <label for="input-code" class="col-form-label">{{ entry_code }}</label> <input type="text" value="' + code + '" placeholder="{{ entry_code }}" name="code" id="input-code" class="form-control"></input>';
+    html += '          <div id="error-code" class="invalid-feedback"></div>';
+    html += '        </div>';
+    html += '        <div class="mb-3">';
+    html += '          <label for="input-description" class="col-form-label">{{ entry_description }}</label> <textarea placeholder="{{ entry_description }}"  name="description" id="input-description" rows="3" class="form-control">' + description + '</textarea>';
+    html += '        </div>';
+    html += '        <div class="mb-3 required">';
+    html += '          <label for="input-trigger" class="col-form-label">{{ entry_trigger }}</label> <textarea placeholder="{{ entry_trigger }}"  name="trigger" id="input-trigger" rows="1" class="form-control">' + trigger + '</textarea>';
+    html += '          <div id="error-trigger" class="invalid-feedback"></div>';
+    html += '        </div>';
+    html += '        <div class="mb-3 required">';
+    html += '          <label for="input-action" class="col-form-label">{{ entry_action }}</label> <textarea placeholder="{{ entry_action }}"  name="action" id="input-action" rows="1" class="form-control">' + action + '</textarea>';
+    html += '          <div id="error-action" class="invalid-feedback"></div>';
+    html += '        </div>';
+    html += '        <div class="mb-3">';
+    html += '          <label for="input-sort-order" class="col-form-label">{{ entry_sort_order }}</label> <input type="text" value="' + sort_order + '" placeholder="{{ entry_sort_order }}" name="sort_order" id="input-sort-order" class="form-control"></input>';
+    html += '        </div>';
+    html += '        <div class="mb-3">';
+    html += '          <label for="input-status" class="col-form-label">{{ entry_status }}</label>';
+    html += '          <div class="form-check form-switch form-switch-lg">';
+    html += '            <input type="checkbox" name="status" value="1"  class="form-check-input" ' + (status ? ' checked' : '' ) + '/>';
+    html += '          </div>';
+    html += '        </div>';
+    html += '        </form>';
+    html += '      </div>';
+    html += '      <div class="modal-footer">';
+    html += '          <button type="button" id="event-form-submit" class="btn btn-primary"><i class="fas fa-save"></i> {{ button_save }}</button>';
+    html += '      </div>';
+    html += '    </div>';
+    html += '  </div>';
+    html += '</div>';
+
+    $('body').append(html);
+
+    submit_handler_init();
+
+    var modal = new bootstrap.Modal(document.querySelector('#modal-event-form'));
+
+    modal.show();
+}
+
+function submit_handler_init() {
+
+  $('#modal-event-form').on('click', '#event-form-submit', function(e) {
+    e.preventDefault();
+
+    var element = this;
+    var form = $('#event-form');
+    
+    var action = $(form).attr('action');
+
+    $.ajax({
+        url: action,
+        type: 'post',
+        data: $(form).serialize(),
+        dataType: 'json',
+        beforeSend: function() {
+            $(element).prop('disabled', true).addClass('loading');
+        },
+        complete: function() {
+            $(element).prop('disabled', false).removeClass('loading');
+        },
+        success: function(json) {          
+            $('.alert-dismissible').remove();
+            $(element).find('.is-invalid').removeClass('is-invalid');
+            $(element).find('.invalid-feedback').removeClass('d-block');
+
+            if (json['error'] && json['error']['warning']) {
+                $('#modal-event-form .alert').prepend('<div class="alert alert-danger alert-dismissible"><i class="fas fa-exclamation-circle"></i> ' + json['error']['warning'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+            }
+            if (typeof json['error'] == 'object') {
+
+                for (key in json['error']) {
+                    $('#error-' + key.replaceAll('_', '-')).html(json['error'][key]).addClass('d-block');
+                }
+            }
+
+            if (json['event_id']) {
+                $('#input-event-id').val(json['event_id']);
+                $('#modal-event-form .modal-title').text('{{ text_edit }}');
+                $('#modal-event-form .modal-title-event-id').html('&nbsp;#' + json['event_id']);
+            }  
+
+            if (json['success']) {
+                $('#modal-event-form .alert').prepend('<div class="alert alert-success alert-dismissible"><i class="fas fa-check-circle"></i> ' + json['success'] + ' <button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>');
+
+                $('#event').load($('#form-event').attr('data-oc-load'));
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError) {
+            console.log(thrownError + "\r\n" + xhr.statusText + "\r\n" + xhr.responseText);
+        }
+    });
+  });
+}
+
+$('#button-filter').on('click', function () {
+
+    var element = this;
+
+    var url = '';
+
+    var filter_code = $('#input-code').val();
+
+    if (filter_code) {
+        url += '&filter_code=' + encodeURIComponent(filter_code);
+    }
+
+    var filter_trigger = $('#input-trigger').val();
+
+    if (filter_trigger) {
+        url += '&filter_trigger=' + encodeURIComponent(filter_trigger);
+    }
+
+    var filter_action = $('#input-action').val();
+
+    if (filter_action) {
+        url += '&filter_action=' + encodeURIComponent(filter_action);
+    }
+
+    var filter_status = $('#input-status').val();
+
+    if (filter_status !== '') {
+        url += '&filter_status=' + filter_status;
+    }
+
+    $(this).prop('disabled', element).addClass('loading');
+    $('#event').load($(element).attr('data-oc-load') + url, function() {
+      $(element).prop('disabled', false).removeClass('loading');
+    });
+});
+
+//--></script>
+{{ footer }}

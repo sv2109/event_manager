@@ -360,10 +360,17 @@ class Event extends \Opencart\System\Engine\Controller {
 		if (!$this->user->hasPermission('modify', 'extension/sv2109_event_manager/marketplace/event')) {
 			$json['error']['warning'] = $this->language->get('error_permission');
 		}
-
-		if ((utf8_strlen(trim($this->request->post['code'])) < 1) || (utf8_strlen($this->request->post['code']) > 128)) {
-			$json['error']['code'] = $this->language->get('error_code');
+		
+		if (version_compare(VERSION, '4.0.1.0', '<')) {
+			if ((utf8_strlen(trim($this->request->post['code'])) < 1) || (utf8_strlen($this->request->post['code']) > 128)) {
+				$json['error']['code'] = $this->language->get('error_code');
+			}
+		} else {
+			if ((\Opencart\System\Helper\Utf8\strlen(trim($this->request->post['code'])) < 1) || (\Opencart\System\Helper\Utf8\strlen($this->request->post['code']) > 128)) {
+				$json['error']['code'] = $this->language->get('error_code');
+			}
 		}
+
 		if (empty(trim($this->request->post['trigger']))) {
 			$json['error']['trigger'] = $this->language->get('error_trigger');
 		}

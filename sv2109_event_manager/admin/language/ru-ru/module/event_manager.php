@@ -1,6 +1,6 @@
 <?php
 // Heading
-$_['heading_title']    = 'Event Manager v1.0 [sv2109.com]';
+$_['heading_title']    = 'Event Manager v1.0.1 [sv2109.com]';
 
 // Text
 $_['text_extension']   = 'Расширения';

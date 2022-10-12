@@ -1,5 +1,5 @@
 ========================================================================================================================
-Event Manager v1.0
+Event Manager v1.0.1
 Автор sv2109 (sv2109@gmail.com)
 Copyright (c) 2022, sv2109 (sv2109.com)
 ========================================================================================================================
@@ -23,5 +23,9 @@ It adds the following functionality:
 2. The ability to create new events through the admin panel and not through the program code.
 3. Filter existing events by the following fields: code, trigger, action, status
 
+Changes
+v1.0.1
+- added support for OpenCart 4.0.1.1
+
 Compatibilities:
-OpenCart 4.0.0.0 
+OpenCart 4.0.0.0, 4.0.1.1 
